@@ -29,3 +29,15 @@ CREATE TABLE "images" (
 * ctrl + right arrow
 * ctrl + page up
 * ctrl + page down
+
+## Frequently Asked Questions
+
+Is it a portable version? Yes, it is.
+
+Does it modify the photo file itself to insert the tags?  No, it won't. It keeps a datbase of tags in [SQLite](tags.db).
+
+What if I moved the files in a different location after scanning? Fix the database of paths, or re-scan the new path.
+
+How many files can it tag at once? It is subject to available RAM memory.
+
+How long does it take to scan at least 100 potos? It might take a while, because it collects CRC32 hash.
