@@ -1,17 +1,12 @@
 # tag.cs
-Image Tagger
-
-Title displays the name of the current image file.
+Image Tagger Software to build database of user defined tags.
 
 ## Features
+* Window title displays the name of the current image file.
 * Supported image types by extension: jpg, jpeg, png, gif
-* Shows cursor as busy while scanning.
+* Shows busy cursor sign while scanning a directory.
 * Remembers a batch on muliple scans.
 * Backs up images when "empty" is requested when using Command Line Interface.
-
-When click on image, open the folder containing the file.
-
-Builds an SQLite database of basic photo tags, with preview.
 
 ```
 CREATE TABLE "images" (
