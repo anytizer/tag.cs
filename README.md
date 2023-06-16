@@ -1,6 +1,16 @@
 # tag.cs
 Image Tagger
 
+Title displays the name of the current image file.
+
+## Features
+* Supported image types by extension: jpg, jpeg, png, gif
+* Shows cursor as busy while scanning.
+* Remembers a batch on muliple scans.
+* Backs up images when "empty" is requested when using Command Line Interface.
+
+When click on image, open the folder containing the file.
+
 Builds an SQLite database of basic photo tags, with preview.
 
 ```
@@ -23,21 +33,24 @@ CREATE TABLE "images" (
 ![image](https://github.com/anytizer/tag.cs/assets/5563341/2d6de159-8448-4e29-acf2-7057e536a3f9)
 
 ## Keyboard shortcuts:
-* ctrl + o
-* ctrl + s
-* ctrl + left arrow
-* ctrl + right arrow
-* ctrl + page up
-* ctrl + page down
+
+key combination      | What it does
+---------------------|--------------
+ctrl + o             | Opens a directory to scan
+ctrl + s             | Save tag information back to the database
+ctrl + left arrow    | Navigate to previous image
+ctrl + right arrow   | Navigate to next image
+ctrl + page up       | Jump navigator to next 10th image
+ctrl + page down     | Jump navigator to previous 10th image
 
 ## Frequently Asked Questions
 
 Is it a portable version? Yes, it is.
 
-Does it modify the photo file itself to insert the tags?  No, it won't. It keeps a datbase of tags in [SQLite](tags.db).
+Does it modify the photo file itself to insert the tags? No, it won't. It keeps a datbase of tags in [SQLite](tags.db).
 
 What if I moved the files in a different location after scanning? Fix the database of paths, or re-scan the new path.
 
 How many files can it tag at once? It is subject to available RAM memory.
 
-How long does it take to scan at least 100 potos? It might take a while, because it collects CRC32 hash.
+How long does it take to scan at least 100 photos? It might take a while, because it collects CRC32 hash.
