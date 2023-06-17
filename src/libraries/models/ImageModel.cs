@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace libraries
+namespace libraries.models
 {
     public class ImageModel
     {

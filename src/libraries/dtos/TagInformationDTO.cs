@@ -1,4 +1,4 @@
-﻿namespace libraries
+﻿namespace libraries.dtos
 {
     public class TagInformationDTO
     {

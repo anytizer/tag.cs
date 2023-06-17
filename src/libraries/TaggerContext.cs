@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using configurations;
+using libraries.models;
+using Microsoft.EntityFrameworkCore;
 
 namespace libraries
 {
@@ -8,10 +10,10 @@ namespace libraries
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            string dbfile = "tags.db";
-            if(!File.Exists(dbfile))
+            string dbfile = Configs.DATABASE;
+            if (!File.Exists(dbfile))
             {
-                throw new Exception("Install database first.");
+                throw new Exception($"First, install the database ({dbfile})!");
             }
             else
             {

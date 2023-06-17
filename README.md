@@ -1,30 +1,34 @@
 # tag.cs
-Image Tagger Software to build database of user defined tags.
+Image Tagger
 
 ## Features
-* Window title displays the name of the current image file.
+* Title displays the name of the current image file.
 * Supported image types by extension: jpg, jpeg, png, gif
-* Shows busy cursor sign while scanning a directory.
+* Shows cursor as busy while scanning.
 * Remembers a batch on muliple scans.
-* Backs up images when "empty" is requested when using Command Line Interface.
+* Backs up images when "empty" is requested while using Command Line Interface.
+* Builds an SQLite database of basic photo tags, with preview.
+
+## Database of tags
 
 ```
 CREATE TABLE "images" (
-	"ImagePath"	TEXT NOT NULL,
-	"ImageBatch"	TEXT NOT NULL,
-	"ImageFileSize"	TEXT NOT NULL,
-	"ImageCRC32"	TEXT NOT NULL,
-	"ImageHeight"	TEXT NOT NULL,
-	"ImageWidth"	TEXT NOT NULL,
-	"ImageOrientation"	TEXT NOT NULL,
-	"ImageTags"	TEXT NOT NULL,
-	"ImageDescription"	TEXT NOT NULL,
-	"ImageObjects"	TEXT NOT NULL,
-	"ImagePeople"	TEXT NOT NULL
+  "ImagePath"	TEXT NOT NULL,
+  "ImageBatch"	TEXT NOT NULL,
+  "ImageFileSize"	TEXT NOT NULL,
+  "ImageCRC32"	TEXT NOT NULL,
+  "ImageHeight"	TEXT NOT NULL,
+  "ImageWidth"	TEXT NOT NULL,
+  "ImageOrientation"	TEXT NOT NULL,
+  "ImageTags"	TEXT NOT NULL,
+  "ImageDescription"	TEXT NOT NULL,
+  "ImageObjects"	TEXT NOT NULL,
+  "ImagePeople"	TEXT NOT NULL
 );
 ```
 
 ## Interface
+
 ![image](https://github.com/anytizer/tag.cs/assets/5563341/2d6de159-8448-4e29-acf2-7057e536a3f9)
 
 ## Keyboard shortcuts:
@@ -40,9 +44,9 @@ ctrl + page down     | Jump navigator to previous 10th image
 
 ## Frequently Asked Questions
 
-Is it a portable version? Yes, it is.
+Is it a portable version? Yes, it is. Drop tags.db file within the application folder, if missing.
 
-Does it modify the photo file itself to insert the tags? No, it won't. It keeps a datbase of tags in [SQLite](tags.db).
+Does it modify the photo file itself to insert the tags? No, it won't. It keeps a database of tags in [SQLite](tags.db).
 
 What if I moved the files in a different location after scanning? Fix the database of paths, or re-scan the new path.
 

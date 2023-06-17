@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace libraries
+﻿namespace libraries
 {
     public class Crc32Utils
     {

@@ -1,11 +1,12 @@
 using libraries;
-using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using libraries.dtos;
+using libraries.models;
 
 namespace browser
 {
     public partial class Browser : Form
     {
+        private bool autosave = false;
         private int currentIndex = 0;
         private string[] images = new string[] { };
         public Browser()
@@ -29,7 +30,7 @@ namespace browser
             {
                 string selectedPath = folderDialog.SelectedPath;
                 this.images = this.scan_images_live(selectedPath); // live scan
-                                                                   //this.images = this.scan_image_db(); // db scan
+                                                                   // this.images = this.scan_image_db(); // db scan
 
                 // instantly build the database
                 Cursor.Current = Cursors.WaitCursor;
@@ -38,7 +39,6 @@ namespace browser
                 scanner.build(selectedPath);
 
                 Cursor.Current = Cursors.Default;
-
 
 
                 this.currentIndex = 0;
@@ -122,33 +122,44 @@ namespace browser
         private string[] scan_images_live(string selectedPath)
         {
             Scanner scanner = new Scanner();
-            string[] images = scanner.GetImageFiles(selectedPath);
+            string[] images = scanner.list(selectedPath);
             return images;
         }
 
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
-
+            if (this.autosave) this.SaveTagInformation();
         }
 
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
-
+            if (this.autosave) this.SaveTagInformation();
         }
 
         private void textBox4_TextChanged(object sender, EventArgs e)
         {
-
+            if (this.autosave) this.SaveTagInformation();
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-
+            if (this.autosave) this.SaveTagInformation();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
+            this.navigateToFirst();
+        }
+
+        private void navigateToFirst()
+        {
             this.currentIndex = 0;
+            DisplayImage();
+        }
+
+        private void navigateToLast()
+        {
+            this.currentIndex = this.images.Count() - 1;
             DisplayImage();
         }
 
@@ -173,13 +184,12 @@ namespace browser
 
         private void button4_Click(object sender, EventArgs e)
         {
-            this.currentIndex = this.images.Count() - 1;
-            DisplayImage();
+            this.navigateToLast();
         }
 
         private void button6_Click(object sender, EventArgs e)
         {
-            this.SaveTagInformation();
+            if (this.autosave) this.SaveTagInformation();
         }
 
         private void SaveTagInformation()
@@ -202,12 +212,19 @@ namespace browser
             }
         }
 
-        private void button7_Click(object sender, EventArgs e)
+
+        private void BrowseDatabase()
         {
             this.images = this.scan_image_db();
-
-            this.currentIndex = 0;
-            DisplayImage();
+            if (images.Length >= 1)
+            {
+                this.currentIndex = 0;
+                DisplayImage();
+            }
+            else
+            {
+                MessageBox.Show("No images!", "");
+            }
         }
 
         private void button8_Click(object sender, EventArgs e)
@@ -266,6 +283,14 @@ namespace browser
 
                 this.JumpTo(-10);
             }
+            else if (keyData == (Keys.Control | Keys.Home))
+            {
+                this.navigateToFirst();
+            }
+            else if (keyData == (Keys.Control | Keys.End))
+            {
+                this.navigateToLast();
+            }
 
             return (handled) ? handled : base.ProcessCmdKey(ref msg, keyData);
         }
@@ -284,30 +309,94 @@ namespace browser
 
         private void Browser_Load(object sender, EventArgs e)
         {
-            toolTip1.SetToolTip(this.button5, "Scan a directory and build database!");
-            toolTip1.SetToolTip(this.button7, "Load from image database.");
+            toolTip1.AutomaticDelay = 800;
+            toolTip1.SetToolTip(this.button1, "Ctrl + Home");
+            toolTip1.SetToolTip(this.button4, "Ctrl + End");
             toolTip1.SetToolTip(this.button2, "Ctrl + Left Arrow");
             toolTip1.SetToolTip(this.button3, "Ctrl + Right Arrow");
             toolTip1.SetToolTip(this.button9, "Ctrl + PageDown");
             toolTip1.SetToolTip(this.button8, "Ctrl + PageUp");
-            toolTip1.AutomaticDelay = 1000;
+            toolTip1.SetToolTip(this.button11, "Search on Tags");
+
+            this.BrowseDatabase();
         }
 
-        private void button10_Click(object sender, EventArgs e)
+        private void help()
         {
             string help = "";
-            help += "\r\n" + "Keyboard shortcuts:";
-            help += "\r\n" + "Ctrl + Left Arrow";
+            help += "Ctrl + Left Arrow";
             help += "\r\n" + "Ctrl + Right Arrow";
             help += "\r\n" + "Ctrl + PageUp";
             help += "\r\n" + "Ctrl + PageDown";
+            help += "\r\n" + "Ctrl + Home";
+            help += "\r\n" + "Ctrl + End";
             help += "\r\n" + "Ctrl + S";
             help += "\r\n" + "Ctrl + O";
 
-            MessageBox.Show(help, "Help", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(help, "Keyboard Shortcuts", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void toolTip1_Popup(object sender, PopupEventArgs e)
+        {
+
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            string search = this.textBox5.Text.ToString();
+            this.images = this.searchOnTags(search);
+            this.currentIndex = 0;
+            DisplayImage();
+        }
+
+        private string[] searchOnTags(string search)
+        {
+            TaggerContext dbc = new TaggerContext();
+            string[] images = dbc.images.Where(x => x.ImageTags.Contains(search) || x.ImageObjects.Contains(search) || x.ImagePeople.Contains(search) || x.ImageDescription.Contains(search)).Select(x => x.ImagePath).ToArray();
+            return images;
+        }
+
+        private void scanADirectoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.OpenScanDirectory();
+        }
+
+        private void databaseBrowserToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.BrowseDatabase();
+        }
+
+        private void projectSourceCodeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("@anytizer/tag.cs", "At GitHub");
+        }
+
+        private void registeredShortcutsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.help();
+        }
+
+        private void autosaveTagsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.autosaveTagsToolStripMenuItem.Checked = !this.autosaveTagsToolStripMenuItem.Checked;
+            this.autosave = this.autosaveTagsToolStripMenuItem.Checked;
+
+            if (!this.autosave) MessageBox.Show("Press Ctrl + S to save the tag manually.", "Remember!");
+        }
+
+        private void reCreateDatabaseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DialogResult dr = MessageBox.Show("Are you sure?", "Confirm?", MessageBoxButtons.YesNo);
+            if (dr == DialogResult.Yes)
+            {
+                Scanner scanner = new Scanner();
+                string batch = scanner.empty();
+
+                MessageBox.Show("Database backed up and emptied.", batch);
+            }
+        }
+
+        private void textBox5_TextChanged(object sender, EventArgs e)
         {
 
         }
