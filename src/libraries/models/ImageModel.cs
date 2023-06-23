@@ -13,8 +13,10 @@ namespace libraries.models
         public string ImageWidth { get; set; } = "";
         public string ImageOrientation { get; set; } = "";
         public string ImageTags { get; set; } = "";
-        public string ImageDescription { get; set; } = "";
         public string ImageObjects { get; set; } = "";
         public string ImagePeople { get; set; } = "";
+        public string ImageDescription { get; set; } = "";
+        public string ImageNotes{ get; set; } = "";
+        public string ImageColors { get; set; } = "";
     }
 }

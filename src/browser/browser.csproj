@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="xyvu5f4u.ym5~" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\libraries\libraries.csproj" />
   </ItemGroup>
 

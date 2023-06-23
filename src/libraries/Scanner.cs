@@ -55,6 +55,7 @@ namespace libraries
             return tag;
         }
 
+        // scan on live folders
         public string[] list(string directoryPath)
         {
             string searchPattern = "*";
@@ -81,11 +82,49 @@ namespace libraries
 
         public void newDB()
         {
-            File.Create(Configs.DATABASE);
+            File.Create(Configs.DATABASE); // touch the file.
 
-            //this.dbc = new TaggerContext();
             this.dbc.Database.ExecuteSqlRaw(File.ReadAllText("tags.sql"));
             this.dbc.SaveChanges();
+        }
+
+        public string[] search(string portion)
+        {
+            TaggerContext dbc = new TaggerContext();
+            string[] images = dbc.images.Where(x =>
+                x.ImageTags.ToLower().Contains(portion) ||
+                x.ImageObjects.ToLower().Contains(portion) ||
+                x.ImagePeople.ToLower().Contains(portion) ||
+                x.ImageDescription.ToLower().Contains(portion) ||
+                x.ImageNotes.ToLower().Contains(portion) ||
+                x.ImageColors.ToLower().Contains(portion)
+            ).Select(x => x.ImagePath).ToArray();
+            return images;
+
+        }
+
+        public string[] scan_image_db()
+        {
+            TaggerContext dbc = new TaggerContext();
+            string[] images = dbc.images.Select(x => x.ImagePath).ToArray();
+            return images;
+        }
+
+        public void update(TagInformationDTO tag)
+        {
+            TaggerContext dbc = new TaggerContext();
+            ImageModel? image = dbc.images.Where(x => x.ImagePath == tag.path).FirstOrDefault();
+            if (image != null)
+            {
+                image.ImageTags = tag.tags;
+                image.ImageObjects = tag.objects;
+                image.ImagePeople = tag.people;
+                image.ImageDescription = tag.description;
+                image.ImageNotes = tag.notes;
+                image.ImageColors = tag.colors;
+
+                dbc.SaveChanges();
+            }
         }
     }
 }

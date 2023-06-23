@@ -4,15 +4,14 @@ using libraries.models;
 
 namespace browser
 {
-    public partial class Browser : Form
+    public partial class Browser4 : Form
     {
         private bool autosave = false;
         private int currentIndex = 0;
         private string[] images = new string[] { };
-        public Browser()
+        public Browser4()
         {
             InitializeComponent();
-
             this.KeyPreview = true;
         }
 
@@ -40,7 +39,6 @@ namespace browser
 
                 Cursor.Current = Cursors.Default;
 
-
                 this.currentIndex = 0;
                 DisplayImage();
             }
@@ -48,9 +46,8 @@ namespace browser
 
         private string[] scan_image_db()
         {
-            TaggerContext dbc = new TaggerContext();
-            string[] images = dbc.images.Select(x => x.ImagePath).ToArray();
-            return images;
+            Scanner scanner = new Scanner();
+            return scanner.scan_image_db();
         }
 
         private void DisplayImage()
@@ -60,17 +57,22 @@ namespace browser
             {
                 pictureBox1.ImageLocation = fileToDisplay;
 
-                TagInformationDTO tag = PullTagInformation(fileToDisplay);
+                TagInformationDTO tag = this.PullTagInformation(fileToDisplay);
                 this.textBox1.Text = tag.tags;
                 this.textBox4.Text = tag.objects;
                 this.textBox3.Text = tag.people;
                 this.textBox2.Text = tag.description;
+                this.textBox6.Text = tag.notes;
+                this.textBox7.Text = tag.colors;
                 this.label1.Text = tag.crc32;
 
                 this.label2.Text = (this.currentIndex + 1) + " of " + this.images.Length;
 
                 // update form title
                 this.Text = new FileInfo(fileToDisplay).Name;
+
+                //this.listBox1.SetSelected(this.currentIndex, true);
+                //this.listBox1.TopIndex = this.currentIndex;
             }
         }
 
@@ -110,10 +112,12 @@ namespace browser
                 tag.height = image.ImageHeight;
                 tag.width = image.ImageWidth;
                 tag.orientation = image.ImageOrientation;
+                tag.tags = image.ImageTags;
                 tag.objects = image.ImageObjects;
                 tag.people = image.ImagePeople;
                 tag.description = image.ImageDescription;
-                tag.tags = image.ImageTags;
+                tag.notes = image.ImageNotes;
+                tag.colors = image.ImageColors;
             }
 
             return tag;
@@ -189,41 +193,52 @@ namespace browser
 
         private void button6_Click(object sender, EventArgs e)
         {
-            if (this.autosave) this.SaveTagInformation();
+            this.SaveTagInformation();
         }
 
         private void SaveTagInformation()
         {
             // saving...
-            string fileToDisplay = this.currenttlyIndexedPath();
-            if (fileToDisplay != "")
+            TagInformationDTO tag = this.collect();
+            if (tag.path != "")
             {
-                TaggerContext dbc = new TaggerContext();
-                ImageModel? image = dbc.images.Where(x => x.ImagePath == fileToDisplay).FirstOrDefault();
-                if (image != null)
-                {
-                    image.ImageTags = this.textBox1.Text.ToString();
-                    image.ImageObjects = this.textBox4.Text.ToString();
-                    image.ImagePeople = this.textBox3.Text.ToString();
-                    image.ImageDescription = this.textBox2.Text.ToString();
-
-                    dbc.SaveChanges();
-                }
+                Scanner scanner = new Scanner();
+                scanner.update(tag);
             }
         }
 
+        private TagInformationDTO collect()
+        {
+            TagInformationDTO tag = new TagInformationDTO();
+            tag.path = this.currenttlyIndexedPath(); ;
+            tag.tags = this.textBox1.Text.ToString();
+            tag.objects = this.textBox4.Text.ToString();
+            tag.people = this.textBox3.Text.ToString();
+            tag.description = this.textBox2.Text.ToString();
+            tag.notes = this.textBox6.Text.ToString();
+            tag.colors = this.textBox7.Text.ToString();
+
+            return tag;
+        }
 
         private void BrowseDatabase()
         {
             this.images = this.scan_image_db();
-            if (images.Length >= 1)
+            this.update_listbox();
+        }
+
+        private void update_listbox()
+        {
+            if (this.images.Length >= 1)
             {
                 this.currentIndex = 0;
+
                 DisplayImage();
+                this.listBox1.DataSource = this.images;
             }
             else
             {
-                MessageBox.Show("No images!", "");
+                MessageBox.Show("Images not found.", "No data!");
             }
         }
 
@@ -250,12 +265,12 @@ namespace browser
 
                 this.SaveTagInformation();
             }
-            else if (keyData == (Keys.Control | Keys.O))
-            {
-                handled = true;
-
-                this.OpenScanDirectory();
-            }
+            //else if (keyData == (Keys.Control | Keys.O))
+            //{
+            //    handled = true;
+            //
+            //    this.OpenScanDirectory();
+            //}
             else if (keyData == (Keys.Control | Keys.Left))
             {
                 handled = true;
@@ -285,16 +300,34 @@ namespace browser
             }
             else if (keyData == (Keys.Control | Keys.Home))
             {
+                handled = true;
                 this.navigateToFirst();
             }
             else if (keyData == (Keys.Control | Keys.End))
             {
+                handled = true;
                 this.navigateToLast();
             }
+            else if (keyData == Keys.Enter)
+            {
+                handled = true;
+                this.search();
+            }
 
-            return (handled) ? handled : base.ProcessCmdKey(ref msg, keyData);
+            return handled ? handled : base.ProcessCmdKey(ref msg, keyData);
         }
 
+        private void search()
+        {
+            string search = this.textBox5.Text.ToString().ToLower();
+
+            Scanner scanner = new Scanner();
+            this.images = scanner.search(search);
+
+            this.update_listbox();
+        }
+
+        // override the hops with index
         private void JumpTo(int hops)
         {
             this.currentIndex += hops;
@@ -309,14 +342,14 @@ namespace browser
 
         private void Browser_Load(object sender, EventArgs e)
         {
-            toolTip1.AutomaticDelay = 800;
+            toolTip1.AutomaticDelay = 700;
             toolTip1.SetToolTip(this.button1, "Ctrl + Home");
             toolTip1.SetToolTip(this.button4, "Ctrl + End");
             toolTip1.SetToolTip(this.button2, "Ctrl + Left Arrow");
             toolTip1.SetToolTip(this.button3, "Ctrl + Right Arrow");
             toolTip1.SetToolTip(this.button9, "Ctrl + PageDown");
             toolTip1.SetToolTip(this.button8, "Ctrl + PageUp");
-            toolTip1.SetToolTip(this.button11, "Search on Tags");
+            toolTip1.SetToolTip(this.button11, "Search on Tags: ENTER");
 
             this.BrowseDatabase();
         }
@@ -332,6 +365,9 @@ namespace browser
             help += "\r\n" + "Ctrl + End";
             help += "\r\n" + "Ctrl + S";
             help += "\r\n" + "Ctrl + O";
+            help += "\r\n" + "ENTER";
+            help += "\r\n" + "F1";
+            help += "\r\n" + "Alt + F4";
 
             MessageBox.Show(help, "Keyboard Shortcuts", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -343,17 +379,7 @@ namespace browser
 
         private void button11_Click(object sender, EventArgs e)
         {
-            string search = this.textBox5.Text.ToString();
-            this.images = this.searchOnTags(search);
-            this.currentIndex = 0;
-            DisplayImage();
-        }
-
-        private string[] searchOnTags(string search)
-        {
-            TaggerContext dbc = new TaggerContext();
-            string[] images = dbc.images.Where(x => x.ImageTags.Contains(search) || x.ImageObjects.Contains(search) || x.ImagePeople.Contains(search) || x.ImageDescription.Contains(search)).Select(x => x.ImagePath).ToArray();
-            return images;
+            this.search();
         }
 
         private void scanADirectoryToolStripMenuItem_Click(object sender, EventArgs e)
@@ -397,6 +423,62 @@ namespace browser
         }
 
         private void textBox5_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ListBox? lb = sender as ListBox;
+            if (lb != null)
+            {
+                //MessageBox.Show(lb.SelectedValue.ToString());
+                this.JumpTo(lb.SelectedIndex);
+                //this.pictureBox1.ImageLocation = lb.SelectedValue.ToString();
+            }
+
+        }
+
+        private void Browser3_Resize(object sender, EventArgs e)
+        {
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void export()
+        {
+            MessageBox.Show(string.Join("\n", this.images.Take(30)), "CSV, max 30 rows!");
+        }
+
+        private void button5_Click_1(object sender, EventArgs e)
+        {
+            this.export();
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            this.copy_files();
+        }
+
+        private void copy_files()
+        {
+            MessageBox.Show("Search, Export the CSV and copy the Files.", "Not implemented");
+        }
+
+        private void panel8_Paint(object sender, PaintEventArgs e)
         {
 
         }

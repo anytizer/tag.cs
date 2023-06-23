@@ -4,7 +4,13 @@
     <_LastSelectedProfileId>d:\Desktop\-\submodules-local\tag.cs\src\browser\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Update="Browser.cs">
+    <Compile Update="Browser1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Browser3.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Browser4.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
